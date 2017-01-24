@@ -24,7 +24,21 @@ void read_spark_pulse()
 
 void loop()
 {
-  get_engine_rpm();
+  float engine_rpm;
+  bool get_rpm = get_engine_rpm(&engine_rpm);
+
+  if(get_rpm) {
+    //Serial.print("Engine RPM: ");
+    Serial.println(engine_rpm);
+    delay(9);
+    Serial.write(27);
+    Serial.print("[2J");
+    Serial.write(27);
+    Serial.print("[H");
+    delay(1);
+  }
+
+  analogWrite(INJECT_CORRECTION, 255);
   
   //stepper_motor_control(STEPPER_CW, 360, 1000); //Range from 0 to 360
   //delay(1); STEPPER_SINGLE_STEP

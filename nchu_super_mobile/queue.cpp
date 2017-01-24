@@ -1,9 +1,11 @@
 #include "queue.hpp"
 
-float queue[QUEUE_SIZE] = {0.0};
-int queue_size = 0;
+int Queue::size()
+{
+  return queue_size;
+}
 
-void push(float new_data)
+void Queue::push(float new_data)
 {
   if(queue_size < QUEUE_SIZE) {
     queue_size++;
@@ -16,7 +18,7 @@ void push(float new_data)
   queue[0] = new_data;
 }
 
-int pop(float *data)
+int Queue::pop(float *data)
 {
   if(queue_size == 0) {
     return 1;

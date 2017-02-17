@@ -1,32 +1,25 @@
 #include "pindef.hpp"
 #include "stepper.hpp"
 #include "engine_rpm.hpp"
+#include "af_guage.hpp"
 
 void setup() {
   engine_rpm_init();
   stepper_init();
 
   Serial.begin(57600);
+  Serial1.begin(9600);
+  Serial2.begin(9600);
+  Serial3.begin(9600);
 }
-
-#ifdef DEBUG_CODE
-void read_spark_pulse()
-{
-  double duration_high =  pulseIn(SPARK_IN, HIGH);
-  double duration_low = pulseIn(SPARK_IN, LOW); 
-  double frequency = 1.0 / ((duration_high + duration_low) / 1000000);
-  //delay(500);
-  
-  Serial.print("Engine RPM:");
-  Serial.println(frequency);
-}
-#endif
 
 void loop()
 {
+  float af_ratio = 0.0;
   float engine_rpm;
   bool get_rpm = get_engine_rpm(&engine_rpm);
 
+#if 0 /* RPM test */
   if(get_rpm) {
     //Serial.print("Engine RPM: ");
     Serial.println(engine_rpm);
@@ -37,10 +30,18 @@ void loop()
     Serial.print("[H");
     delay(1);
   }
+#endif
 
-  analogWrite(INJECT_CORRECTION, 255);
+#if 1
+  af_ratio = read_air_fuel_ratio();
   
-  //stepper_motor_control(STEPPER_CW, 360, 1000); //Range from 0 to 360
-  //delay(1); STEPPER_SINGLE_STEP
-  //while(1);
+  Serial.println(af_ratio);
+  delay(1);
+#endif
+
+#if 0 /* Step motor test */
+  stepper_motor_control(STEPPER_CW, 360, 1000); //Range from 0 to 360
+  delay(1); STEPPER_SINGLE_STEP
+  while(1);
+#endif
 }

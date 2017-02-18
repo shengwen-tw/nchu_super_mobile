@@ -48,6 +48,6 @@ void loop()
 #endif
 
 #if 1 /* DAC test */
-  set_dac(5.0);
+  set_dac(2.5);
 #endif
 }

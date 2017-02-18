@@ -2,10 +2,12 @@
 #include "stepper.hpp"
 #include "engine_rpm.hpp"
 #include "af_guage.hpp"
+#include "inject_correct.hpp"
 
 void setup() {
   engine_rpm_init();
   stepper_init();
+  dac_init();
 
   Serial.begin(57600);
   Serial1.begin(9600);
@@ -32,7 +34,7 @@ void loop()
   }
 #endif
 
-#if 1
+#if 0 /* A/F Guage test */
   af_ratio = read_air_fuel_ratio();
   
   Serial.println(af_ratio);
@@ -43,5 +45,9 @@ void loop()
   stepper_motor_control(STEPPER_CW, 360, 1000); //Range from 0 to 360
   delay(1); STEPPER_SINGLE_STEP
   while(1);
+#endif
+
+#if 1 /* DAC test */
+  set_dac(5.0);
 #endif
 }

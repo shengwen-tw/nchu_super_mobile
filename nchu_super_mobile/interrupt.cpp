@@ -30,10 +30,3 @@ void toogle_freq_test_pin()
 {
   REG_PIOB_ODSR = (~(REG_PIOB_ODSR & PIO_PB27)) & PIO_PB27;
 }
-
-void TC0_Handler()
-{
-  REG_TC0_SR0; //Clear timer counter
-
-  toogle_freq_test_pin();
-}

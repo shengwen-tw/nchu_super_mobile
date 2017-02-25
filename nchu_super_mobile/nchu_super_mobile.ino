@@ -3,6 +3,7 @@
 #include "engine_rpm.hpp"
 #include "af_guage.hpp"
 #include "inject_correct.hpp"
+#include "interrupt.hpp"
 
 void setup() {
   engine_rpm_init();
@@ -13,6 +14,8 @@ void setup() {
   Serial1.begin(9600);
   Serial2.begin(9600);
   Serial3.begin(9600);
+
+  timer_interrupt_init();
 }
 
 void loop()
@@ -48,6 +51,8 @@ void loop()
 #endif
 
 #if 1 /* DAC test */
-  set_dac(2.5);
+ 
+  set_dac(2);
+  
 #endif
 }

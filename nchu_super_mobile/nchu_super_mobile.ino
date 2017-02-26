@@ -6,10 +6,10 @@
 #include "interrupt.hpp"
 
 #define AF_P 0.5
-#define AF_I 20.0
+#define AF_I 0.0015
 #define AF_D 0.0
 #define DELTA_T 10.0 //ms
-#define I_ATTENUATE 0.87
+#define I_ATTENUATE 0.98
 
 void driver_test();
 
@@ -41,7 +41,7 @@ void setup() {
 
 #if 0
   do {
-    bool get_rpm = get_engine_rpmno_previous_data =(&engine_rpm);
+    bool get_rpm = get_engine_rpm =(&engine_rpm);
   } while(get_rpm == false);
 #endif
   previous_read_time = millis();
@@ -90,8 +90,8 @@ void air_fuel_ratio_control()
   set_dac(dac_output_voltage);
 
   //Serial.println(current_af);
-  //Serial.println(dac_output_voltage - 2.0f);
-  Serial.println(i_term);
+  Serial.println(dac_output_voltage - 2.0f);
+  //Serial.println(i_term);
 }
 
 void TC0_Handler()
@@ -123,7 +123,7 @@ void loop()
     previous_read_time = millis();
     sensor_failed = true;
   } else {
-    if(millis() - previous_read_time > 0.2) {
+    if(millis() - previous_read_time > 200) {
       sensor_failed = false;
       no_previous_data = true;
     }

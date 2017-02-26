@@ -5,7 +5,7 @@
 #include "inject_correct.hpp"
 #include "interrupt.hpp"
 
-#define AF_P 0.0
+#define AF_P 0.01
 #define AF_I 0.0
 #define AF_D 0.0
 #define DELTA_T 10.0 //ms
@@ -31,7 +31,7 @@ void setup() {
   engine_rpm_init();
   stepper_init();
   dac_init();
-  timer_interrupt_init();
+  //timer_interrupt_init();
 
   do {
     current_af = read_air_fuel_ratio();
@@ -62,7 +62,7 @@ void air_fuel_ratio_control()
   }
   
   /* Air/Fuel ratio PID control */
-  float af_setpoint = 14.6;
+  float af_setpoint = 14.7;
   float current_error = af_setpoint - current_af;
 
   float p_term = AF_P * current_error;
@@ -110,8 +110,11 @@ void loop()
 #endif
 
   current_af = read_air_fuel_ratio();
-  
-  //Serial.println(af_ratio); delay(1);
+  if(current_af == -1) {
+    sensor_failed = true;
+  } else {
+    sensor_failed = false;
+  }
 }
 
 void driver_test()

@@ -17,10 +17,14 @@ float read_air_fuel_ratio()
   
   if (temp >= 10.0f && temp <= 19.98f) {
     af_ratio = temp;
-    Serial.println(af_ratio); delay(1);
+    //Serial.print("A/F: ");
+    //Serial.println(af_ratio);
+    delay(1);
   } else {
     af_ratio = -1;
   }
+
+  //Serial.println(af_ratio);
   
   return af_ratio;
 }

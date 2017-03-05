@@ -5,11 +5,11 @@
 #include "inject_correct.hpp"
 #include "interrupt.hpp"
 
-#define AF_P 0.5
-#define AF_I 0.0015
 #define AF_D 0.0
-#define DELTA_T 10.0 //ms
-#define I_ATTENUATE 0.98
+#define AF_I 0.0
+#define I_MAX 2.0
+#define I_MIN 0
+#define DELTA_T 0.01 //ms
 
 void driver_test();
 
@@ -21,7 +21,7 @@ unsigned long previous_read_time = 0;
 
 /* Controller data */
 float previous_error = 0.0;
-float integral = 0.0;
+float integrator = 0.0;
 bool no_previous_data = true;
 
 void setup() {
@@ -63,41 +63,61 @@ void air_fuel_ratio_control()
   if(sensor_failed == true) {
     set_dac(2.0);
   }
-  
-  /* Air/Fuel ratio PID control */
-  float af_setpoint = 14.7;
-  float current_error = af_setpoint - current_af;
 
-  float p_term = AF_P * current_error;
-  float _integral = 0.0f;
+  float af_setpoint = 14.7;
+  float current_error = (1.0 / af_setpoint) - (1.0 / current_af);
+
+  float correction = current_af * current_error;
+  float p_term = correction / 0.27f * 2.0f;
   float i_term = 0.0f;
   float d_term = 0.0f;
 
   if(no_previous_data == false) {
-    _integral = I_ATTENUATE * (integral + current_error * DELTA_T);
-    i_term = AF_I * _integral;
-    d_term = AF_D * (current_error - previous_error) / DELTA_T;
+    //I term
+    if(fabs(af_setpoint - current_af) < 0.3) {
+        //I term is no need when the error is so small
+        integrator = 0.0f;
+    } else {
+        integrator += (AF_I * p_term * DELTA_T);
+        bound(I_MAX, I_MIN, &integrator);
+    }
+    i_term = integrator;
+
+    //D term
+    d_term = AF_D * (current_error - previous_error) * 10000.0 / DELTA_T;
   }
 
-  /* Update datas for next iteration */
+  /* next iteration */
   no_previous_data = false;
   previous_error = current_error;
-  integral = _integral;
 
-  /* Set DAC voltage */
-  float dac_output_voltage = 2.0f + -(p_term + i_term + d_term);
+  float dac_output_voltage = p_term + i_term + d_term + 2.0f;
+  
   bound(4.0, 0.0, &dac_output_voltage);
   set_dac(dac_output_voltage);
 
-  //Serial.println(current_af);
-  Serial.println(dac_output_voltage - 2.0f);
-  //Serial.println(i_term);
+  #if 0
+    Serial.print("d_term:");
+    Serial.print(d_term);
+    Serial.print(",af:");
+    Serial.print(current_af);
+    Serial.print(",%:");
+    Serial.print(correction);
+    Serial.print(",V:");
+    Serial.println(dac_output_voltage);
+  #endif
+  
+  #if 1
+    Serial.print(p_term);
+    Serial.print(" ");
+    Serial.println(i_term);
+  #endif
 }
 
 void TC0_Handler()
 {
   REG_TC0_SR0; //Clear timer counter
-
+  toogle_freq_test_pin();
   air_fuel_ratio_control();
 }
 
@@ -126,6 +146,7 @@ void loop()
     if(millis() - previous_read_time > 200) {
       sensor_failed = false;
       no_previous_data = true;
+      integrator = 0.0;
     }
   }
 }

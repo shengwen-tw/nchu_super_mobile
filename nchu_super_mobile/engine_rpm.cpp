@@ -85,3 +85,4 @@ bool get_engine_rpm(float *rpm)
   *rpm = filtered_freq * 60;
   return true;
 }
+

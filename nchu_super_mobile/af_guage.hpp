@@ -1,5 +1,6 @@
 #ifndef __AF_GUAGE_HPP__
 
-float read_air_fuel_ratio();
+bool read_air_fuel_ratio(float *af);
 
 #endif
+

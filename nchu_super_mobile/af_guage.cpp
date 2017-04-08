@@ -1,9 +1,9 @@
 #include "Arduino.h"
 
-float read_air_fuel_ratio()
+boolean read_air_fuel_ratio(float *curr_af)
 { 
   if (Serial3.available() <= 0) {
-    return -1;
+    return false;
   }
 
   float af_ratio = 0.0f;
@@ -17,14 +17,14 @@ float read_air_fuel_ratio()
   
   if (temp >= 10.0f && temp <= 19.98f) {
     af_ratio = temp;
-    //Serial.print("A/F: ");
-    //Serial.println(af_ratio);
-    delay(1);
   } else {
-    af_ratio = -1;
+    return false;
   }
 
   //Serial.println(af_ratio);
   
-  return af_ratio;
+  *curr_af = af_ratio;
+
+  return true;
 }
+

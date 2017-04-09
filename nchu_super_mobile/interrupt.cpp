@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include "interrupt.hpp"
 
-#define SPEED(x) (4200 * x)
+#define SPEED(x) (21000000 / x)
 
 void freq_test_pin_init()
 {
@@ -20,7 +20,7 @@ void timer_interrupt_init()
     NVIC_EnableIRQ(TC0_IRQn); //Enable interrupt in NVIC before starting interrupt
     REG_TC0_CMR0 = TC_CMR_WAVSEL_UP_RC | TC_CMR_TCCLKS_TIMER_CLOCK1; //Wavesel on rising edge with timer clock1 (42MHz)
     REG_TC0_IER0 = TC_IER_CPCS; //Enabel RC compare interrupt
-    REG_TC0_RC0 = SPEED(100);  //100hz
+    REG_TC0_RC0 = SPEED((int)FREQUENCY);
 
     REG_TC0_CCR0 = TC_CCR_SWTRG | TC_CCR_CLKEN; //Start timer
 

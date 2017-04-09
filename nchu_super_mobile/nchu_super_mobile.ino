@@ -6,10 +6,12 @@
 #include "interrupt.hpp"
 #include "inject_in.hpp"
 
+#define LOG_MODE 0 //1:enable log, 0:disable log
+
 #define ECU_MAX_CORRECTION 0.54f
 /* KI and KD, tune me! */
 #define AF_I 0.0f
-#define AF_D 1.0f //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+#define AF_D -0.05f //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 /* Bound integrator in range of 0% to 100% */
 #define I_MAX (-ECU_MAX_CORRECTION)
 #define I_MIN (+ECU_MAX_CORRECTION)
@@ -105,7 +107,7 @@ void air_fuel_ratio_control()
     bound(I_MAX, I_MIN, &integrator);
 
     //D term
-    d_term = AF_D * (current_error * 10000.0 - previous_error * 10000.0) / DELTA_T;
+    d_term = AF_D * (current_error - previous_error) / DELTA_T;
     d_term *= current_af;
   } else {
     integrator = 0.0f;
@@ -127,7 +129,7 @@ void air_fuel_ratio_control()
 
 void TC0_Handler()
 {
-  toogle_freq_test_pin(); //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXx
+  //toogle_freq_test_pin(); //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXx
   air_fuel_ratio_control();
   REG_TC0_SR0; //Clear timer counter
 }
@@ -178,10 +180,12 @@ void loop()
     return; //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   }
 
+#if (LOG_MODE == 0)
   char buffer[256] = {'\0'};
-  sprintf(buffer, "A/F:%.3f,error:%+.3f,corr:%+.3f,V:%.3f,P:%+.3f,I:%+.3f,D:%+.7f,ij:%.3f,time:%f\n",
+  sprintf(buffer, "A/F:%.3f,error:%+.3f,last error:,%+.3f,corr:%+.3f,V:%.3f,P:%+.3f,I:%+.3f,D:%+.7f,ij:%.3f,time:%.3f\n",
     current_af,
     current_error,
+    previous_error,
     correction,
     dac_output_voltage,
     p_term,
@@ -190,8 +194,24 @@ void loop()
     current_inject_duration,
     millis() / 1000.0f
   );
+#else
+  char buffer[256] = {'\0'};
+  sprintf(buffer, "%.3f,%+.3f,%+.3f,%+.3f,%.3f,%+.3f,%+.3f,%+.7f,%.3f,%.3f\n",
+    current_af,
+    current_error,
+    previous_error,
+    correction,
+    dac_output_voltage,
+    p_term,
+    i_term,
+    d_term,
+    current_inject_duration,
+    millis() / 1000.0f
+  );
+#endif
 
-  //Serial.print(buffer);
+
+  Serial.print(buffer);
   delay(50);
 }
 

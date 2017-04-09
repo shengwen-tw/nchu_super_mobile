@@ -1,7 +1,7 @@
 #ifndef __INTERRUPT_H__
 #define __INTERRUPT_H__
 
-#define FREQUENCY 4.0f
+#define FREQUENCY 10.0f
 #define DELTA_T (1.0 / FREQUENCY) //ms
 
 void timer_interrupt_init();

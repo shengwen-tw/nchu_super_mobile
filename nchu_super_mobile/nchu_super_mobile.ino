@@ -10,8 +10,9 @@
 
 #define ECU_MAX_CORRECTION 0.54f
 /* KI and KD, tune me! */
-#define AF_I 0.0f
-#define AF_D -0.05f //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+#define AF_P 0.65f //Fixed 0.65
+#define AF_I +0.1f
+#define AF_D -0.0f //Useless
 /* Bound integrator in range of 0% to 100% */
 #define I_MAX (-ECU_MAX_CORRECTION)
 #define I_MIN (+ECU_MAX_CORRECTION)
@@ -96,14 +97,14 @@ void air_fuel_ratio_control()
   af_setpoint = 16.5f;
   current_error = (1.0f / af_setpoint) - (1.0f / current_af);
   
-  p_term = current_error * current_af;
+  p_term = AF_P * current_error * current_af;
   i_term = 0.0f;
   d_term = 0.0f;
 
   if(no_previous_data == false) {
     //I term
-    integrator += current_error * DELTA_T;
-    i_term = AF_I * integrator * current_af;
+    integrator = integrator + (current_af * current_error * DELTA_T);
+    i_term = AF_I * integrator;
     bound(I_MAX, I_MIN, &integrator);
 
     //D term
@@ -182,10 +183,11 @@ void loop()
 
 #if (LOG_MODE == 0)
   char buffer[256] = {'\0'};
-  sprintf(buffer, "A/F:%.3f,error:%+.3f,last error:,%+.3f,corr:%+.3f,V:%.3f,P:%+.3f,I:%+.3f,D:%+.7f,ij:%.3f,time:%.3f\n",
+  sprintf(buffer,"A/F:%.3f,error:%+.3f,last error:%+.3f,int:%+.3f,corr:%+.3f,V:%.3f,P:%+.3f,I:%+.3f,D:%+.7f,ij:%.3f,time:%.3f\n\r",
     current_af,
     current_error,
     previous_error,
+    integrator,
     correction,
     dac_output_voltage,
     p_term,
@@ -196,10 +198,11 @@ void loop()
   );
 #else
   char buffer[256] = {'\0'};
-  sprintf(buffer, "%.3f,%+.3f,%+.3f,%+.3f,%.3f,%+.3f,%+.3f,%+.7f,%.3f,%.3f\n",
+  sprintf(buffer, "%.3f,%+.3f,%+.3f,%+.3f,%+.3f,%.3f,%+.3f,%+.3f,%+.7f,%.3f,%.3f\n",
     current_af,
     current_error,
     previous_error,
+    integrator,
     correction,
     dac_output_voltage,
     p_term,

@@ -5,12 +5,12 @@
 #include "inject_correct.hpp"
 #include "inject_in.hpp"
 
-#define LOG_MODE 0 //1:enable log, 0:disable log
+#define LOG_MODE 0 //0:csv log mode, 1:print mode, 2:A/F plot mode
 
 #define ECU_MAX_CORRECTION 0.54f
 /* KI and KD, tune me! */
-#define AF_P 0.65f //Fixed 0.65
-#define AF_I +0.01f
+#define AF_P +0.65f //Fixed 0.65
+#define AF_I +0.5f
 #define AF_D -0.0f //Useless
 /* Bound integrator in range of 0% to 100% */
 #define I_MAX (+ECU_MAX_CORRECTION * 10.0)
@@ -35,7 +35,7 @@ boolean sensor_failed = false;
 unsigned long previous_control_time = 0;
 
 /* Controller data */
-float af_setpoint = 0.0f;
+float af_setpoint = 16.5f;
 float current_error = 0.0f;
 float p_term = 0.0f;
 float i_term = 0.0f;
@@ -108,7 +108,7 @@ void air_fuel_ratio_control()
     return;
   }
   
-  af_setpoint = 16.5f;
+  //af_setpoint = 16.5f;
   current_error = (1.0f / af_setpoint) - (1.0f / current_af);
   
   p_term = AF_P * current_error * current_af;
@@ -195,8 +195,9 @@ void loop()
 
     digitalWrite(2, !digitalRead(2));
 
+    char buffer[256] = {'\0'};
+
 #if (LOG_MODE == 0)
-   char buffer[256] = {'\0'};
    sprintf(buffer,"A/F:%.3f,error:%+.3f,last error:%+.3f,int:%+.3f,corr:%+.3f,V:%.3f,P:%+.3f,I:%+.3f,D:%+.7f,ij:%.3f,time:%.3f\n\r",
      current_af,
      current_error,
@@ -210,8 +211,7 @@ void loop()
      current_inject_duration,
      millis() / 1000.0f
     );
-#else
-   char buffer[256] = {'\0'};
+#elif (LOG_MODE == 1)
    sprintf(buffer, "%.3f,%+.3f,%+.3f,%+.3f,%+.3f,%.3f,%+.3f,%+.3f,%+.7f,%.3f,%.3f\n",
      current_af,
      current_error,
@@ -225,6 +225,8 @@ void loop()
      current_inject_duration,
      millis() / 1000.0f
    );
+#elif (LOG_MODE == 2)
+  sprintf(buffer, "%f,%f\n", current_af, 16.5f);
 #endif
 
     Serial.print(buffer);

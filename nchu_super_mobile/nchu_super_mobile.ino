@@ -5,13 +5,13 @@
 #include "inject_correct.hpp"
 #include "inject_in.hpp"
 
-#define LOG_MODE 0 //0:csv log mode, 1:print mode, 2:A/F plot mode
+#define LOG_MODE 1 //0:print mode, 1:csv log mode, 2:A/F plot mode
 
 #define ECU_MAX_CORRECTION 0.54f
 /* KI and KD, tune me! */
-#define AF_P +0.65f //Fixed 0.65
-#define AF_I +0.5f
-#define AF_D -0.0f //Useless
+#define AF_KP +0.35f //Fixed 0.65
+#define AF_KI +0.5f
+#define AF_KD -0.0f  //Useless
 /* Bound integrator in range of 0% to 100% */
 #define I_MAX (+ECU_MAX_CORRECTION * 10.0)
 #define I_MIN (-ECU_MAX_CORRECTION * 10.0)
@@ -21,6 +21,8 @@
 
 #define FREQUENCY 10.0f
 #define DELTA_T (1.0 / FREQUENCY)
+
+#define D_FILTER_SIZE 5
 
 void driver_test();
 
@@ -47,6 +49,10 @@ float dac_output_voltage = 0.0f;
 float previous_error = 0.0;
 float integrator = 0.0; //Bound in 0%~100%
 bool no_previous_data = true;
+
+//D moving avearge
+float d_moving_average[D_FILTER_SIZE] = {0};
+int d_moving_average_count = 0;
 
 void setup() {
   Serial.begin(115200); //USB, to tablet
@@ -111,21 +117,47 @@ void air_fuel_ratio_control()
   //af_setpoint = 16.5f;
   current_error = (1.0f / af_setpoint) - (1.0f / current_af);
   
-  p_term = AF_P * current_error * current_af;
+  p_term = AF_KP * current_error * current_af;
   i_term = 0.0f;
   d_term = 0.0f;
 
   if(no_previous_data == false) {
     //I term
-    integrator = integrator + AF_I * (current_af * current_error * DELTA_T);
+    integrator = integrator + AF_KI * (current_af * current_error * DELTA_T);
     bound(I_MAX, I_MIN, &integrator);
     i_term = integrator;
 
-    //D term
-    d_term = AF_D * (current_error - previous_error) / DELTA_T;
-    d_term *= current_af;
+    /* Ready to use moving average */
+    if(d_moving_average_count == D_FILTER_SIZE) {
+      /* D term = Kd * AFc * (now - last) / delta_t */
+
+      //Calculate "last" using moving average
+      float last = 0;
+      for(int i = 0; i < d_moving_average_count; i++) {
+        last += d_moving_average[i];
+      }
+      last /= d_moving_average_count;
+
+      //Update moving average array and calculate "now" term
+      float _now = 0;
+      for(int i = 0; i < d_moving_average_count - 1; i++) {
+        d_moving_average[i] = d_moving_average[i + 1]; //update except for last term
+        _now += d_moving_average[i];
+      }
+      d_moving_average[d_moving_average_count] = current_error; //update last term
+      _now += d_moving_average[d_moving_average_count]; //Add last term
+      _now /= d_moving_average_count;
+
+      d_term = AF_KD * (_now - last) / DELTA_T;
+      d_term *= current_af;
+    } else {
+      /* Fill the moving average array */
+      d_moving_average[d_moving_average_count] = current_error;
+    }
   } else {
+    /* Reset I and D */
     integrator = 0.0f;
+    d_moving_average_count = 0;
   }
 
   /* next iteration */

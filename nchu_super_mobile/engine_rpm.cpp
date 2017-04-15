@@ -1,7 +1,6 @@
 #include <Arduino.h>
 
 #include "pindef.hpp"
-#include "queue.hpp"
 #include "engine_rpm.hpp"
 
 #define FILTER_SIZE 15

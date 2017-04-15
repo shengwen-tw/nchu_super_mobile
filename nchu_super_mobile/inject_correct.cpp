@@ -13,6 +13,9 @@ void set_dac(float voltage)
         if(voltage < 0.0 || voltage > 5.0) {
           voltage = 2.0;
         }
+
+        /* Tune Biad */
+        voltage -= 0.03;
   
         uint32_t scale = (uint32_t)((voltage * (4096.0 / 5.0)) - 1);
         dac.setVoltage(pgm_read_word(&(scale)), false);

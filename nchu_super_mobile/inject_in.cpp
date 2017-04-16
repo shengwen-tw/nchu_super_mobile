@@ -32,7 +32,7 @@ void inject_duration_calc()
     
     volatile unsigned long temp = inject_in_end_time - inject_in_start_time;
 
-    if(temp < 2) {
+    if(temp < 1.0f) {
       _ready = false;
     } else {
       get_time = millis();

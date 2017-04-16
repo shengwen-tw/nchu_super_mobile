@@ -5,33 +5,35 @@
 #include "inject_correct.hpp"
 #include "inject_in.hpp"
 
-#define LOG_MODE 1 //0:print mode, 1:csv log mode, 2:A/F plot mode
-
-#define ECU_MAX_CORRECTION 0.54f
-/* KI and KD, tune me! */
-#define AF_KP +0.35f //Fixed 0.65
-#define AF_KI +0.5f
-#define AF_KD -0.0f  //Useless
-/* Bound integrator in range of 0% to 100% */
-#define I_MAX (+ECU_MAX_CORRECTION * 10.0)
-#define I_MIN (-ECU_MAX_CORRECTION * 10.0)
-#define DELTA_T 0.01f //ms
-/* Injector parameter */
-#define INJECTOR_D0 0.0f//0.5f
+#define LOG_MODE 2 //0:print mode, 1:csv log mode, 2:A/F plot mode
 
 #define FREQUENCY 10.0f
 #define DELTA_T (1.0 / FREQUENCY)
+#define ECU_MAX_CORRECTION 0.54f
+
+/* KI and KD, tune me! */
+//PI Control, best: KP = 0.35, KI = 0.5
+#define AF_KP +0.45f
+#define AF_KI +0.5f
+#define AF_KD -0.0f
+
+/* Bound integrator in range of 0% to 100% */
+#define I_MAX (+ECU_MAX_CORRECTION * 10.0)
+#define I_MIN (-ECU_MAX_CORRECTION * 10.0)
+
+/* Injector parameter */
+#define INJECTOR_D0 0.0f//0.5f
 
 #define D_FILTER_SIZE 5
 
-void driver_test();
+void debug_print();
 
 /* Sensor datas */
 float current_af = 0.0f;
 float current_inject_duration = 0.0f;
 float engine_rpm = 0.0f;
 unsigned long previous_read_time = 0;
-boolean sensor_failed = false;
+boolean sensor_failed = true;
 
 /* Controller timer: 10hz */
 unsigned long previous_control_time = 0;
@@ -87,14 +89,52 @@ void setup() {
 
   previous_read_time = millis();
 
-  delay(10000);
-
   Serial.println("[Start controller!]");
 
   Serial.println("Please wait for 10 seconds!");
 
-  pinMode(2, OUTPUT);
-  digitalWrite(2, LOW);
+  pinMode(FREQUENCY_TEST_PIN, OUTPUT);
+  digitalWrite(FREQUENCY_TEST_PIN, LOW);
+
+  delay(10000);
+}
+
+boolean read_sensors()
+{
+  int timeout_af = 65535, timeout_ij = 65535;
+  boolean get_af = false, get_inject = false;
+  while(timeout_af--) {
+    get_af = read_air_fuel_ratio(&current_af);
+
+    if(get_af == true) {
+      break;
+    }
+  }
+  
+  while(timeout_ij--) {
+    get_inject = get_inject_duration(&current_inject_duration);
+
+    if(get_inject == true && current_inject_duration > 2.0f) {
+      break;
+    }
+  }
+
+  /* Successfully get the data from sensor */
+  if(timeout_af != 0 && timeout_ij != 0) {
+    sensor_failed = false;
+    previous_read_time = millis();
+    return true; //No error!
+  } else {
+    /* Timeout! Sensor error! */
+    sensor_failed = true;
+
+    /* If still can't get data over 500ms, then there might exist some problems! */
+    if(millis() - previous_read_time > 500) {
+      no_previous_data = true;
+    }
+
+    return false; //Sensor failed
+  }
 }
 
 void bound(float upper_bound, float lower_bound, float *x)
@@ -107,11 +147,14 @@ void bound(float upper_bound, float lower_bound, float *x)
 }
 
 void air_fuel_ratio_control()
-{ 
-  /* Sensor failed */
+{
   if(sensor_failed == true) {
-    set_dac(2.0f); //0%
-    return;
+    /* Reset I and D */
+    integrator = 0.0f;
+    d_moving_average_count = 0;
+    set_dac(2.0f);
+
+    return; //Leave!!!
   }
   
   //af_setpoint = 16.5f;
@@ -121,7 +164,7 @@ void air_fuel_ratio_control()
   i_term = 0.0f;
   d_term = 0.0f;
 
-  if(no_previous_data == false) {
+  if(no_previous_data == true) {
     //I term
     integrator = integrator + AF_KI * (current_af * current_error * DELTA_T);
     bound(I_MAX, I_MIN, &integrator);
@@ -144,8 +187,9 @@ void air_fuel_ratio_control()
         d_moving_average[i] = d_moving_average[i + 1]; //update except for last term
         _now += d_moving_average[i];
       }
-      d_moving_average[d_moving_average_count] = current_error; //update last term
-      _now += d_moving_average[d_moving_average_count]; //Add last term
+      
+      d_moving_average[d_moving_average_count - 1] = current_error; //update last term
+      _now += d_moving_average[d_moving_average_count - 1]; //Add last term
       _now /= d_moving_average_count;
 
       d_term = AF_KD * (_now - last) / DELTA_T;
@@ -153,6 +197,7 @@ void air_fuel_ratio_control()
     } else {
       /* Fill the moving average array */
       d_moving_average[d_moving_average_count] = current_error;
+      d_moving_average_count++;
     }
   } else {
     /* Reset I and D */
@@ -161,11 +206,12 @@ void air_fuel_ratio_control()
   }
 
   /* next iteration */
-  no_previous_data = false;
+  //no_previous_data = false;
   previous_error = current_error;
 
   /* Correction = (P + I + D) *stop inf injector_fix_coefficient */
   injector_fix_coefficient = (current_inject_duration - INJECTOR_D0) / current_inject_duration; //(dc - d0) / dc
+  //injector_fix_coefficient = 1.0f;
   correction = (p_term + i_term + d_term) * injector_fix_coefficient;
 
   /* Convert to DAC value */
@@ -174,61 +220,39 @@ void air_fuel_ratio_control()
   set_dac(dac_output_voltage);
 }
 
-boolean read_sensors()
-{
-  int timeout_af = 65535, timeout_ij = 65535;
-  boolean get_af, get_inject;
-  while(timeout_af--) {
-    get_af = read_air_fuel_ratio(&current_af);
-
-    if(get_af == true) {
-      break;
-    }
-  }
-  
-  while(timeout_ij--) {
-    get_inject = get_inject_duration(&current_inject_duration);
-
-    if(get_inject == true) {
-      break;
-    }
-  }
-
-  //Serial.println(current_inject_duration);delay(10);
-
-  /* Successfully get the data from sensor */
-  if(timeout_af != 0 && timeout_ij != 0) {
-    previous_read_time = millis();
-    return true; //No error!
-  /* Timeout! Sensor error! */
-  } else {
-    if(millis() - previous_read_time > 2000) {
-      no_previous_data = true;
-    }
-
-    return false; //Sensor failed
-  }
-}
-
 void loop()
 {
-  //engine_rpm_test();
-  if(read_sensors() == false) {
-    sensor_failed = true;
+  boolean get_sensor_data = read_sensors();
+
+  /* Read sensors */
+  if(get_sensor_data == false) {
+    //XXXXXXXXXXXXXXXXXXXXXXXXXXxTime!
+    
+    /* Wait for too long, there mus be some error! */
     Serial.println("[Sensor failed]");
     delay(1);
-    return; //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
   }
 
+  /* Call controller every 10hz */
   unsigned long current_control_time = millis();
   if(current_control_time - previous_control_time >= (unsigned long)(DELTA_T * 1000.0)) {
     air_fuel_ratio_control();
-    previous_control_time = current_control_time;
+    previous_control_time = current_control_time; //Update frequency control timer
 
-    digitalWrite(2, !digitalRead(2));
+    //Toogle the frequency test pin, remember to x2 to get the real frequency!
+    digitalWrite(FREQUENCY_TEST_PIN, !digitalRead(FREQUENCY_TEST_PIN));
+  }
 
-    char buffer[256] = {'\0'};
+  /* Debug print */
+  if(get_sensor_data == true) {
+    debug_print();
+  }
+}
 
+void debug_print()
+{ 
+   char buffer[256] = {'\0'};
+  
 #if (LOG_MODE == 0)
    sprintf(buffer,"A/F:%.3f,error:%+.3f,last error:%+.3f,int:%+.3f,corr:%+.3f,V:%.3f,P:%+.3f,I:%+.3f,D:%+.7f,ij:%.3f,time:%.3f\n\r",
      current_af,
@@ -236,56 +260,31 @@ void loop()
      previous_error,
      integrator,
      correction,
-     dac_output_voltage,
+     dac_output_voltage,      //unit: voltage
      p_term,
      i_term,
      d_term,
-     current_inject_duration,
-     millis() / 1000.0f
+     current_inject_duration, //unit: millisecond
+     millis() / 1000.0f       //unit: second
     );
 #elif (LOG_MODE == 1)
-   sprintf(buffer, "%.3f,%+.3f,%+.3f,%+.3f,%+.3f,%.3f,%+.3f,%+.3f,%+.7f,%.3f,%.3f\n",
-     current_af,
-     current_error,
-     previous_error,
-     integrator,
-     correction,
-     dac_output_voltage,
-     p_term,
-     i_term,
-     d_term,
-     current_inject_duration,
-     millis() / 1000.0f
-   );
+  sprintf(buffer, "%.3f,%+.3f,%+.3f,%+.3f,%+.3f,%.3f,%+.3f,%+.3f,%+.7f,%.3f,%.3f\n",
+    current_af,
+    current_error,
+    previous_error,
+    integrator,
+    correction,
+    dac_output_voltage,      //unit: voltage
+    p_term,
+    i_term,
+    d_term,
+    current_inject_duration, //unit: millisecond
+    millis() / 1000.0f       //unit: second
+  );
 #elif (LOG_MODE == 2)
   sprintf(buffer, "%f,%f\n", current_af, 16.5f);
 #endif
 
-    Serial.print(buffer);
-    delay(5);
-  }
-}
-
-void engine_rpm_test()
-{
-  bool get_rpm = get_engine_rpm(&engine_rpm);
-  if(get_rpm) {
-    Serial.print("Engine RPM: ");
-    Serial.println(engine_rpm);
-    delay(9);
-    Serial.write(27);
-    Serial.print("[2J");
-    Serial.write(27);
-    Serial.print("[H");
-    delay(1);
-  }
-}
-
-void driver_test()
-{
-#if 0 /* Step motor test */
-  stepper_motor_control(STEPPER_CW, 360, 1000); //Range from 0 to 360
-  delay(1); STEPPER_SINGLE_STEP
-  while(1);
-#endif
+  Serial.print(buffer);
+  delay(5);
 }

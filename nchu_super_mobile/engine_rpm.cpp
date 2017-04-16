@@ -85,3 +85,19 @@ bool get_engine_rpm(float *rpm)
   return true;
 }
 
+void engine_rpm_test()
+{
+  float engine_rpm;
+  bool get_rpm = get_engine_rpm(&engine_rpm);
+  if(get_rpm) {
+    Serial.print("Engine RPM: ");
+    Serial.println(engine_rpm);
+    delay(9);
+    Serial.write(27);
+    Serial.print("[2J");
+    Serial.write(27);
+    Serial.print("[H");
+    delay(1);
+  }
+}
+

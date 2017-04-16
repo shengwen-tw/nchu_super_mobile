@@ -37,3 +37,11 @@ int stepper_motor_control(int dir, int degree, int period)
   return 0;
 }
 
+void stepper_motor_test()
+{
+#if 0 /* Step motor test */
+  stepper_motor_control(STEPPER_CW, 360, 1000); //Range from 0 to 360
+  delay(1); STEPPER_SINGLE_STEP
+  while(1);
+#endif
+}

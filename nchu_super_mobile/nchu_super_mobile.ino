@@ -5,15 +5,15 @@
 #include "inject_correct.hpp"
 #include "inject_in.hpp"
 
-#define LOG_MODE 2 //0:print mode, 1:csv log mode, 2:A/F plot mode
+#define LOG_MODE 1 //0:print mode, 1:csv log mode, 2:A/F plot mode
 
 #define FREQUENCY 10.0f
 #define DELTA_T (1.0 / FREQUENCY)
 #define ECU_MAX_CORRECTION 0.54f
 
 /* KI and KD, tune me! */
-//PI Control, best: KP = 0.35, KI = 0.5
-#define AF_KP +0.45f
+//PI Control, best: KP = 0.45, KI = 0.5
+#define AF_KP +0.7f
 #define AF_KI +0.5f
 #define AF_KD -0.0f
 
@@ -22,7 +22,7 @@
 #define I_MIN (-ECU_MAX_CORRECTION * 10.0)
 
 /* Injector parameter */
-#define INJECTOR_D0 0.0f//0.5f
+#define INJECTOR_D0 0.5f//0.5f
 
 #define D_FILTER_SIZE 5
 
@@ -149,9 +149,6 @@ void bound(float upper_bound, float lower_bound, float *x)
 void air_fuel_ratio_control()
 {
   if(sensor_failed == true) {
-    /* Reset I and D */
-    integrator = 0.0f;
-    d_moving_average_count = 0;
     set_dac(2.0f);
 
     return; //Leave!!!
@@ -164,7 +161,7 @@ void air_fuel_ratio_control()
   i_term = 0.0f;
   d_term = 0.0f;
 
-  if(no_previous_data == true) {
+  if(no_previous_data == false) {
     //I term
     integrator = integrator + AF_KI * (current_af * current_error * DELTA_T);
     bound(I_MAX, I_MIN, &integrator);
@@ -206,12 +203,11 @@ void air_fuel_ratio_control()
   }
 
   /* next iteration */
-  //no_previous_data = false;
+  no_previous_data = false;
   previous_error = current_error;
 
   /* Correction = (P + I + D) *stop inf injector_fix_coefficient */
   injector_fix_coefficient = (current_inject_duration - INJECTOR_D0) / current_inject_duration; //(dc - d0) / dc
-  //injector_fix_coefficient = 1.0f;
   correction = (p_term + i_term + d_term) * injector_fix_coefficient;
 
   /* Convert to DAC value */

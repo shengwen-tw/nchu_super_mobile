@@ -5,7 +5,7 @@
 #include "inject_correct.hpp"
 #include "inject_in.hpp"
 
-#define LOG_MODE 1 //0:print mode, 1:csv log mode, 2:A/F plot mode
+#define LOG_MODE -1 //0:print mode, 1:csv log mode, 2:A/F plot mode
 
 #define FREQUENCY 10.0f
 #define DELTA_T (1.0 / FREQUENCY)

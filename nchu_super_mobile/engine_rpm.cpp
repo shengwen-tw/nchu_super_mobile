@@ -26,7 +26,7 @@ void rpm_signal_rising_handler()
   if(digitalRead(SPARK_IN) != HIGH) {
     return;
   }
-  
+
   volatile unsigned long duration;
   //volatile float new_freq;
   
@@ -76,11 +76,11 @@ void rpm_signal_rising_handler()
 void engine_rpm_init()
 {
   pinMode(SPARK_IN, INPUT);
-  attachInterrupt(0, rpm_signal_rising_handler, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(SPARK_IN), rpm_signal_rising_handler, CHANGE);
 }
 
 bool get_engine_rpm(float *rpm)
-{  
+{
   *rpm = filtered_freq * 60;
   return true;
 }
@@ -92,11 +92,6 @@ void engine_rpm_test()
   if(get_rpm) {
     Serial.print("Engine RPM: ");
     Serial.println(engine_rpm);
-    delay(9);
-    Serial.write(27);
-    Serial.print("[2J");
-    Serial.write(27);
-    Serial.print("[H");
     delay(1);
   }
 }

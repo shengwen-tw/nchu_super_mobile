@@ -1,6 +1,7 @@
 #include "pindef.hpp"
 #include "stepper.hpp"
 #include "engine_rpm.hpp"
+#include "engine_control.hpp"
 #include "af_guage.hpp"
 #include "inject_correct.hpp"
 #include "inject_in.hpp"
@@ -62,6 +63,7 @@ void setup() {
   Serial2.begin(9600);  //Not using
   Serial3.begin(9600);  //A/F Guage
 
+  engine_control_init();
   engine_rpm_init();
   inject_in_init();
   stepper_init();
@@ -78,12 +80,10 @@ void setup() {
   Serial.println("[A/F guage...]");
   while(read_air_fuel_ratio(&current_af) == false);
   Serial.println("Passed");
-
-#if 0
+  
   Serial.println("[Engine RPM...]");
   while(get_engine_rpm(&engine_rpm) == false);
   Serial.println("Passed");
-#endif
 
   Serial.println("[All sensors passed!]");
 
@@ -119,6 +119,8 @@ boolean read_sensors()
       break;
     }
   }
+
+  get_engine_rpm(&engine_rpm);
 
   unsigned long current_read_time = millis();
   
@@ -246,6 +248,12 @@ void loop()
   /* Debug print */
   if(get_sensor_data == true) {
     debug_print();
+  }
+
+  /* Engine off control test */
+  Serial.println(engine_rpm);
+  if(engine_rpm > 6500.0) {
+      engine_off();
   }
 }
 

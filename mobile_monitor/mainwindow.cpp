@@ -19,6 +19,8 @@ MainWindow::MainWindow(QWidget *parent) :
     /* Add baudrate options */
     ui->baudrate_combo->addItem("57600");
     ui->baudrate_combo->addItem("115200");
+
+    connect(&serial,SIGNAL(readyRead()),this,SLOT(serialRead()));
 }
 
 MainWindow::~MainWindow()
@@ -39,10 +41,10 @@ void MainWindow::on_connect_button_clicked()
         }
 
         serial.setPortName(ui->serial_combo->currentText());
-        serial.setDataBits(QSerialPort::Data8); //Data bits
-        serial.setParity(QSerialPort::NoParity);    //No parity
-        serial.setStopBits(QSerialPort::OneStop);   //No stop bit
-        serial.setFlowControl(QSerialPort::NoFlowControl);  //No control
+        serial.setDataBits(QSerialPort::Data8);              //Data bits
+        serial.setParity(QSerialPort::NoParity);             //No parity
+        serial.setStopBits(QSerialPort::OneStop);            //No stop bit
+        serial.setFlowControl(QSerialPort::NoFlowControl);   //No control
 
         if(serial.open(QIODevice::ReadWrite)) {
             serial_connected = true;
@@ -50,9 +52,18 @@ void MainWindow::on_connect_button_clicked()
         } else {
             QMessageBox::information(NULL, "error", "Failed to open Serial Port", QMessageBox::Yes);
         }
+
+        qDebug("Open COM");
     } else {
         serial.close();
         serial_connected = false;
         ui->connect_button->setText("Connect");
     }
+}
+
+void MainWindow::serialRead()
+{
+    QByteArray data = serial.readAll();
+
+    qDebug(data);
 }

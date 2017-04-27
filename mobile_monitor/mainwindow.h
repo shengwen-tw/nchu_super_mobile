@@ -21,6 +21,7 @@ public:
 
 private slots:
     void on_connect_button_clicked();
+    void serialRead();
 
 private:
     Ui::MainWindow *ui;

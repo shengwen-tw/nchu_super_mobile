@@ -17,8 +17,8 @@ MainWindow::MainWindow(QWidget *parent) :
     }
 
     /* Add baudrate options */
-    ui->baudrate_combo->addItem("57600");
     ui->baudrate_combo->addItem("115200");
+    ui->baudrate_combo->addItem("57600");
 
     connect(&serial,SIGNAL(readyRead()),this,SLOT(serialRead()));
 }
@@ -63,7 +63,27 @@ void MainWindow::on_connect_button_clicked()
 
 void MainWindow::serialRead()
 {
-    QByteArray data = serial.readAll();
+    QByteArray data = serial.read(1);
 
-    qDebug(data);
+    if(data.at(0) == '@') {
+        //Engine RPM
+        data = serial.read(4);
+        ui->rpm_label->setText("Engine RPM: " + data);
+        //qDebug(data);
+
+        //Car Speed
+        data = serial.read(3);
+        ui->speed_label->setText("Car speed: " + data + "km/hr");
+        //qDebug(data);
+
+        //A/F
+        data = serial.read(4);
+        ui->af_label->setText("A/F: " + data);
+        //qDebug(data);
+
+        //Engine Temp
+        data = serial.read(3);
+        ui->engine_tmp_label->setText("Engine Temp: " + data + "°C");
+        //qDebug(data);
+    }
 }

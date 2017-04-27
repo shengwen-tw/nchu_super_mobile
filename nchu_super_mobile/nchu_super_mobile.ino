@@ -37,6 +37,8 @@ float current_inject_duration = 0.0f;
 float engine_rpm = 0.0f;
 unsigned long previous_read_time = 0;
 boolean sensor_failed = true;
+float engine_temp;
+float car_speed;
 
 /* Controller timer: 10hz */
 unsigned long previous_control_time = 0;
@@ -58,8 +60,6 @@ bool no_previous_data = true;
 //D moving avearge
 float d_moving_average[D_FILTER_SIZE] = {0};
 int d_moving_average_count = 0;
-
-float engine_temp;
 
 void setup() {
   Serial.begin(115200); //USB, to tablet
@@ -272,9 +272,14 @@ void loop()
 
 void send_onboard_parameter_to_tablet()
 {
+  engine_rpm = 2500;
+  current_af = 16.5;
+  engine_temp = 105;
+  car_speed = 55;
+  
   char buffer[256] = {0};
 
-  sprintf(buffer, "@250006716.5085");
+  sprintf(buffer, "@%04.0f%02.1f%03.0f%03.0f\n", engine_rpm, current_af, engine_temp, car_speed);
 
   Serial.print(buffer);
   delay(1);

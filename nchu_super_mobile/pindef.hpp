@@ -8,5 +8,7 @@
 #define STEPPER_DIR        11
 #define STEPPER_PLS        10
 
+#define ENGINE_TEMP        A9
+
 #endif
 

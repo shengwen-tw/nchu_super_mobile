@@ -68,22 +68,22 @@ void MainWindow::serialRead()
     if(data.at(0) == '@') {
         //Engine RPM
         data = serial.read(4);
-        ui->rpm_label->setText("Engine RPM: " + data);
+        ui->rpm_label->setText(data);
         //qDebug(data);
 
         //Car Speed
         data = serial.read(3);
-        ui->speed_label->setText("Car speed: " + data + "km/hr");
+        ui->speed_label->setText(data + "km/hr");
         //qDebug(data);
 
         //A/F
         data = serial.read(4);
-        ui->af_label->setText("A/F: " + data);
+        ui->af_label->setText(data);
         //qDebug(data);
 
         //Engine Temp
         data = serial.read(3);
-        ui->engine_tmp_label->setText("Engine Temp: " + data + "°C");
+        ui->engine_tmp_label->setText(data + "°C");
         //qDebug(data);
     }
 }

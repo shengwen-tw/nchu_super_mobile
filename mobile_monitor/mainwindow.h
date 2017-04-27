@@ -2,6 +2,10 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QSerialPortInfo>
+#include <QComboBox>
+#include <QtGlobal>
+#include <QSerialPort>
 
 namespace Ui {
 class MainWindow;
@@ -15,8 +19,13 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
+private slots:
+    void on_connect_button_clicked();
+
 private:
     Ui::MainWindow *ui;
+    QSerialPort serial;
+    bool serial_connected;
 };
 
 #endif // MAINWINDOW_H

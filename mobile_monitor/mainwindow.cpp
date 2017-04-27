@@ -3,6 +3,7 @@
 #include <QSerialPortInfo>
 #include <QComboBox>
 #include <QtGlobal>
+#include <QMessageBox>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -23,4 +24,35 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+void MainWindow::on_connect_button_clicked()
+{
+    if(serial_connected == false) {
+        if(ui->baudrate_combo->currentText().toStdString() == "57600") {
+            serial.setBaudRate(QSerialPort::Baud57600);
+        } else if(ui->baudrate_combo->currentText().toStdString() == "115200") {
+            serial.setBaudRate(QSerialPort::Baud115200);
+        } else {
+            QMessageBox::information(NULL, "error", "unsupported baudrate", QMessageBox::Yes);
+            return;
+        }
+
+        serial.setPortName(ui->serial_combo->currentText());
+        serial.setDataBits(QSerialPort::Data8); //Data bits
+        serial.setParity(QSerialPort::NoParity);    //No parity
+        serial.setStopBits(QSerialPort::OneStop);   //No stop bit
+        serial.setFlowControl(QSerialPort::NoFlowControl);  //No control
+
+        if(serial.open(QIODevice::ReadWrite)) {
+            serial_connected = true;
+            ui->connect_button->setText("Disconnect");
+        } else {
+            QMessageBox::information(NULL, "error", "Failed to open Serial Port", QMessageBox::Yes);
+        }
+    } else {
+        serial.close();
+        serial_connected = false;
+        ui->connect_button->setText("Connect");
+    }
 }

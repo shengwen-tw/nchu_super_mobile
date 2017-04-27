@@ -35,7 +35,7 @@
      <string>A/F: 16.5</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="pushButton">
+   <widget class="QPushButton" name="connect_button">
     <property name="geometry">
      <rect>
       <x>320</x>

@@ -2,6 +2,7 @@
 #include "stepper.hpp"
 #include "engine_rpm.hpp"
 #include "engine_control.hpp"
+#include "engine_temp.hpp"
 #include "af_guage.hpp"
 #include "inject_correct.hpp"
 #include "inject_in.hpp"
@@ -28,6 +29,7 @@
 #define D_FILTER_SIZE 2
 
 void debug_print();
+void send_onboard_parameter_to_tablet();
 
 /* Sensor datas */
 float current_af = 0.0f;
@@ -57,16 +59,21 @@ bool no_previous_data = true;
 float d_moving_average[D_FILTER_SIZE] = {0};
 int d_moving_average_count = 0;
 
+float engine_temp;
+
 void setup() {
   Serial.begin(115200); //USB, to tablet
   Serial1.begin(9600);  //Not using
   Serial2.begin(9600);  //Not using
   Serial3.begin(9600);  //A/F Guage
 
+  return; //for test XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
   engine_control_init();
   engine_rpm_init();
   inject_in_init();
   stepper_init();
+  engine_temp_init();
   dac_init();
 
   set_dac(2.0f);
@@ -121,6 +128,8 @@ boolean read_sensors()
   }
 
   get_engine_rpm(&engine_rpm);
+
+  read_engine_temp(&engine_temp);
 
   unsigned long current_read_time = millis();
   
@@ -226,6 +235,10 @@ void air_fuel_ratio_control()
 
 void loop()
 {
+  //for test XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXx
+  send_onboard_parameter_to_tablet();
+  return;
+  
   boolean get_sensor_data = read_sensors();
 
   /* Read sensors */
@@ -251,10 +264,20 @@ void loop()
   }
 
   /* Engine off control test */
-  Serial.println(engine_rpm);
+  Serial.println(engine_temp);
   if(engine_rpm > 6500.0) {
       engine_off();
   }
+}
+
+void send_onboard_parameter_to_tablet()
+{
+  char buffer[256] = {0};
+
+  sprintf(buffer, "@250006716.5085");
+
+  Serial.print(buffer);
+  delay(1);
 }
 
 void debug_print()

@@ -279,7 +279,7 @@ void send_onboard_parameter_to_tablet()
   
   char buffer[256] = {0};
 
-  sprintf(buffer, "@%04.0f%02.1f%03.0f%03.0f\n", engine_rpm, current_af, engine_temp, car_speed);
+  sprintf(buffer, "@%04.0f%03.0f%02.1f%03.0f\n", engine_rpm, car_speed, current_af, engine_temp);
 
   Serial.print(buffer);
   delay(1);

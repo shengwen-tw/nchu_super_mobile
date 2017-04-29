@@ -7,6 +7,6 @@ int main(int argc, char *argv[])
     MainWindow w;
     w.setWindowTitle("NCHU Supermileage Monitor");
     w.show();
-
+    w.showMaximized();
     return a.exec();
 }

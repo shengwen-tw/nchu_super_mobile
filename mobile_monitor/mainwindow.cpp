@@ -17,8 +17,8 @@ MainWindow::MainWindow(QWidget *parent) :
     }
 
     /* Add baudrate options */
-    ui->baudrate_combo->addItem("57600");
     ui->baudrate_combo->addItem("115200");
+    ui->baudrate_combo->addItem("57600");
 
     connect(&serial,SIGNAL(readyRead()),this,SLOT(serialRead()));
 }
@@ -63,7 +63,59 @@ void MainWindow::on_connect_button_clicked()
 
 void MainWindow::serialRead()
 {
-    QByteArray data = serial.readAll();
+    QByteArray data = serial.read(1);
 
-    qDebug(data);
+    if(data.at(0) == '@') {
+        //Engine RPM
+        data = serial.read(4);
+        ui->rpm_label->setText(data);
+        //qDebug(data);
+
+        //Car Speed
+        data = serial.read(3);
+        ui->speed_label->setText(data + "km/hr");
+        //qDebug(data);
+
+        //A/F
+        data = serial.read(4);
+        ui->af_label->setText(data);
+        //qDebug(data);
+
+        //Engine Temp
+        data = serial.read(3);
+        ui->engine_tmp_label->setText(data + "°C");
+        //qDebug(data);
+
+        QPalette  on, off;
+        on.setColor(QPalette::WindowText, Qt::green);
+        off.setColor(QPalette::WindowText, Qt::red);
+
+        /* Turn off indicator */
+        data = serial.read(1);
+        if(data.toInt() == 0) {
+            ui->turn_off_indicator->setPalette(off);
+        } else {
+            ui->turn_off_indicator->setPalette(on);
+        }
+
+        /* Turn on indicator */
+        data = serial.read(1);
+        if(data.toInt() == 0) {
+            ui->turn_on_indicator->setPalette(off);
+        } else {
+            ui->turn_on_indicator->setPalette(on);
+        }
+    }
+}
+
+void MainWindow::on_connect_button_2_clicked()
+{
+    for(int i = 0; i < ui->serial_combo->count(); i++) {
+        ui->serial_combo->removeItem(i);
+    }
+
+    /* list all available COM ports */
+    Q_FOREACH(QSerialPortInfo port, QSerialPortInfo::availablePorts()) {
+        ui->serial_combo->addItem(port.portName());
+    }
 }

@@ -85,5 +85,37 @@ void MainWindow::serialRead()
         data = serial.read(3);
         ui->engine_tmp_label->setText(data + "°C");
         //qDebug(data);
+
+        QPalette  on, off;
+        on.setColor(QPalette::WindowText, Qt::green);
+        off.setColor(QPalette::WindowText, Qt::red);
+
+        /* Turn off indicator */
+        data = serial.read(1);
+        if(data.toInt() == 0) {
+            ui->turn_off_indicator->setPalette(off);
+        } else {
+            ui->turn_off_indicator->setPalette(on);
+        }
+
+        /* Turn on indicator */
+        data = serial.read(1);
+        if(data.toInt() == 0) {
+            ui->turn_on_indicator->setPalette(off);
+        } else {
+            ui->turn_on_indicator->setPalette(on);
+        }
+    }
+}
+
+void MainWindow::on_connect_button_2_clicked()
+{
+    for(int i = 0; i < ui->serial_combo->count(); i++) {
+        ui->serial_combo->removeItem(i);
+    }
+
+    /* list all available COM ports */
+    Q_FOREACH(QSerialPortInfo port, QSerialPortInfo::availablePorts()) {
+        ui->serial_combo->addItem(port.portName());
     }
 }

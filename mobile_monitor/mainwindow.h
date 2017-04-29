@@ -23,6 +23,8 @@ private slots:
     void on_connect_button_clicked();
     void serialRead();
 
+    void on_connect_button_2_clicked();
+
 private:
     Ui::MainWindow *ui;
     QSerialPort serial;

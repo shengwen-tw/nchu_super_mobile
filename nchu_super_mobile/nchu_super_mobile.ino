@@ -6,6 +6,7 @@
 #include "af_guage.hpp"
 #include "inject_correct.hpp"
 #include "inject_in.hpp"
+#include "fan.hpp"
 
 #define LOG_MODE -1 //0:print mode, 1:csv log mode, 2:A/F plot mode
 
@@ -62,7 +63,7 @@ float d_moving_average[D_FILTER_SIZE] = {0};
 int d_moving_average_count = 0;
 
 void setup() {
-  Serial.begin(115200); //USB, to tablet
+  Serial.begin(57600); //USB, to tablet
   Serial1.begin(9600);  //Not using
   Serial2.begin(9600);  //Not using
   Serial3.begin(9600);  //A/F Guage
@@ -75,6 +76,7 @@ void setup() {
   stepper_init();
   engine_temp_init();
   dac_init();
+  fan_init();
 
   set_dac(2.0f);
 
@@ -276,10 +278,14 @@ void send_onboard_parameter_to_tablet()
   current_af = 16.5;
   engine_temp = 105;
   car_speed = 55;
+
+  int engine_turn_off = 1;
+  int engine_turn_on = 0;
   
   char buffer[256] = {0};
 
-  sprintf(buffer, "@%04.0f%03.0f%02.1f%03.0f\n", engine_rpm, car_speed, current_af, engine_temp);
+  sprintf(buffer, "@%04.0f%03.0f%02.1f%03.0f%1d%1d\n",
+          engine_rpm, car_speed, current_af, engine_temp, engine_turn_off, engine_turn_on);
 
   Serial.print(buffer);
   delay(1);

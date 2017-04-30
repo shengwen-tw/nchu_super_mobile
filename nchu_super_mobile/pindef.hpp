@@ -1,7 +1,7 @@
 #ifndef __PINDEF_H__
 #define __PINDEF_H__
 
-#define FAN_CONTROL        2
+#define FAN_CONTROL        4
 #define ENGINE_CONTROL     5
 #define SPARK_IN           6
 #define FREQUENCY_TEST_PIN 3

@@ -68,8 +68,6 @@ void setup() {
   Serial2.begin(9600);  //Not using
   Serial3.begin(9600);  //A/F Guage
 
-  return; //for test XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-
   engine_control_init();
   engine_rpm_init();
   inject_in_init();
@@ -79,6 +77,8 @@ void setup() {
   fan_init();
 
   set_dac(2.0f);
+
+  return; //for test XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
   Serial.println("[Begin to check all sensors...]");
 

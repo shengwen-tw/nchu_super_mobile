@@ -116,8 +116,8 @@ void setup() {
 boolean read_sensors()
 {
   
-  int timeout_af = 65535, timeout_ij = 65535;
-  boolean get_af = false, get_inject = false;
+  int timeout_af = 65535, timeout_ij = 65535, timeout_car_speed;
+  boolean get_af = false, get_inject = false, _get_car_speed = false;
   while(timeout_af--) {
     get_af = read_air_fuel_ratio(&current_af);
 
@@ -130,6 +130,14 @@ boolean read_sensors()
     get_inject = get_inject_duration(&current_inject_duration);
 
     if(get_inject == true && current_inject_duration > 1.0f) {
+      break;
+    }
+  }
+
+  while(timeout_car_speed--) {
+    _get_car_speed = get_car_speed(&car_speed);
+
+    if(_get_car_speed == true) {
       break;
     }
   }
@@ -283,12 +291,7 @@ void loop()
 
 void send_onboard_parameter_to_tablet()
 {
-  engine_rpm = 2500;
-  current_af = 16.5;
-  engine_temp = 105;
-  car_speed = 55;
-
-  int engine_turn_off = 1;
+  int engine_turn_off = 0;
   int engine_turn_on = 0;
   
   char buffer[256] = {0};

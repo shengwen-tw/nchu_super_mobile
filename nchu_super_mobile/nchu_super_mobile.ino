@@ -8,7 +8,12 @@
 #include "inject_in.hpp"
 #include "fan.hpp"
 
-#define LOG_MODE -1 //0:print mode, 1:csv log mode, 2:A/F plot mode
+//-1, no serial output
+// 0:print mode
+// 1:csv log mode
+// 2:A/F plot
+// 3:Tablet mode
+#define SERIAL_PRINT_MODE -1
 
 #define FREQUENCY 10.0f
 #define DELTA_T (1.0 / FREQUENCY)
@@ -29,7 +34,7 @@
 
 #define D_FILTER_SIZE 2
 
-void debug_print();
+void serial_print();
 void send_onboard_parameter_to_tablet();
 
 /* Sensor datas */
@@ -77,9 +82,7 @@ void setup() {
   fan_init();
 
   set_dac(2.0f);
-
-  return; //for test XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-
+  
   Serial.println("[Begin to check all sensors...]");
 
   Serial.println("[Inject period...]");
@@ -235,12 +238,20 @@ void air_fuel_ratio_control()
   set_dac(dac_output_voltage);
 }
 
-void loop()
+void engine_auto_turn_off()
 {
-  //for test XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXx
-  send_onboard_parameter_to_tablet();
-  return;
+  if(engine_rpm > 6500.0) {
+      engine_off();
+  }
+}
+
+void fan_control()
+{
   
+}
+
+void loop()
+{ 
   boolean get_sensor_data = read_sensors();
 
   /* Read sensors */
@@ -254,21 +265,17 @@ void loop()
   unsigned long current_control_time = millis();
   if(current_control_time - previous_control_time >= (unsigned long)(DELTA_T * 1000.0)) {
     air_fuel_ratio_control();
+    //engine_auto_turn_off();
+    fan_control();
     previous_control_time = current_control_time; //Update frequency control timer
 
     //Toogle the frequency test pin, remember to x2 to get the real frequency!
-    digitalWrite(FREQUENCY_TEST_PIN, !digitalRead(FREQUENCY_TEST_PIN));
+    //digitalWrite(FREQUENCY_TEST_PIN, !digitalRead(FREQUENCY_TEST_PIN));
   }
 
   /* Debug print */
   if(get_sensor_data == true) {
-    debug_print();
-  }
-
-  /* Engine off control test */
-  Serial.println(engine_temp);
-  if(engine_rpm > 6500.0) {
-      engine_off();
+    serial_print();
   }
 }
 
@@ -291,11 +298,11 @@ void send_onboard_parameter_to_tablet()
   delay(1);
 }
 
-void debug_print()
+void serial_print()
 { 
    char buffer[256] = {'\0'};
   
-#if (LOG_MODE == 0)
+#if (SERIAL_PRINT_MODE == 0)
    sprintf(buffer,"A/F:%.3f,error:%+.3f,last error:%+.3f,int:%+.3f,corr:%+.3f,V:%.3f,P:%+.3f,I:%+.3f,D:%+.7f,ij:%.3f,time:%.3f\n\r",
      current_af,
      current_error,
@@ -309,7 +316,7 @@ void debug_print()
      current_inject_duration, //unit: millisecond
      millis() / 1000.0f       //unit: second
     );
-#elif (LOG_MODE == 1)
+#elif (SERIAL_PRINT_MODE == 1)
   sprintf(buffer, "%.3f,%+.3f,%+.3f,%+.3f,%+.3f,%.3f,%+.3f,%+.3f,%+.7f,%.3f,%.3f\n",
     current_af,
     current_error,
@@ -323,8 +330,10 @@ void debug_print()
     current_inject_duration, //unit: millisecond
     millis() / 1000.0f       //unit: second
   );
-#elif (LOG_MODE == 2)
+#elif (SERIAL_PRINT_MODE == 2)
   sprintf(buffer, "%f,%f\n", current_af, 16.5f);
+#elif (LOG_MOD == 3)
+  send_onboard_parameter_to_tablet();
 #endif
 
   Serial.print(buffer);

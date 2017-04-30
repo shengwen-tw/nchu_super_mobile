@@ -7,6 +7,7 @@
 #include "inject_correct.hpp"
 #include "inject_in.hpp"
 #include "fan.hpp"
+#include "car_speed.hpp"
 
 //-1, no serial output
 // 0:print mode
@@ -76,6 +77,7 @@ void setup() {
   engine_control_init();
   engine_rpm_init();
   inject_in_init();
+  car_speed_in_init();
   stepper_init();
   engine_temp_init();
   dac_init();

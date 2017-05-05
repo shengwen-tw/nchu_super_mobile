@@ -20,6 +20,12 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->baudrate_combo->addItem("115200");
     ui->baudrate_combo->addItem("57600");
 
+    QPalette palette;
+    palette.setColor(QPalette::Background, Qt::black);
+    palette.setColor(QPalette::Base, Qt::black);
+    ui->command_text->setPalette(palette);
+    ui->command_text->setTextColor(Qt::green);
+
     connect(&serial,SIGNAL(readyRead()),this,SLOT(serialRead()));
 }
 
@@ -45,7 +51,6 @@ void MainWindow::on_connect_button_clicked()
         serial.setParity(QSerialPort::NoParity);             //No parity
         serial.setStopBits(QSerialPort::OneStop);            //No stop bit
         serial.setFlowControl(QSerialPort::NoFlowControl);   //No control
-
         if(serial.open(QIODevice::ReadWrite)) {
             serial_connected = true;
             ui->connect_button->setText("Disconnect");
@@ -64,26 +69,31 @@ void MainWindow::on_connect_button_clicked()
 void MainWindow::serialRead()
 {
     QByteArray data = serial.read(1);
+    ui->command_text->append(data);
 
     if(data.at(0) == '@') {
         //Engine RPM
         data = serial.read(4);
         ui->rpm_label->setText(data);
+        ui->command_text->append(data);
         //qDebug(data);
 
         //Car Speed
         data = serial.read(3);
         ui->speed_label->setText(data + "km/hr");
+        ui->command_text->append(data);
         //qDebug(data);
 
         //A/F
         data = serial.read(4);
         ui->af_label->setText(data);
+        ui->command_text->append(data);
         //qDebug(data);
 
         //Engine Temp
         data = serial.read(3);
         ui->engine_tmp_label->setText(data + "°C");
+        ui->command_text->append(data);
         //qDebug(data);
 
         QPalette  on, off;
@@ -92,6 +102,7 @@ void MainWindow::serialRead()
 
         /* Turn off indicator */
         data = serial.read(1);
+        ui->command_text->append(data);
         if(data.toInt() == 0) {
             ui->turn_off_indicator->setPalette(off);
         } else {
@@ -100,11 +111,13 @@ void MainWindow::serialRead()
 
         /* Turn on indicator */
         data = serial.read(1);
+        ui->command_text->append(data);
         if(data.toInt() == 0) {
             ui->turn_on_indicator->setPalette(off);
         } else {
             ui->turn_on_indicator->setPalette(on);
         }
+        data = serial.readAll();
     }
 }
 

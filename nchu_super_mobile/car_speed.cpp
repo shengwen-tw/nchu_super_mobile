@@ -39,6 +39,8 @@ void car_speed_freq_calc()
     _car_speed /= 48.0;
     _car_speed = 3.1415926 * WHEEL_DIAMETER * _car_speed * 0.0036; //km/hr
 
+    if(_car_speed > 1000) {_car_speed = 0;}
+
     car_speed_previous_rising_time = car_speed_current_rising_time;
 
     car_speed_get = true;
@@ -56,7 +58,7 @@ boolean get_car_speed(float *car_speed)
   } else {
     unsigned long current_time = millis();
     /* The wheel is not spinning */
-    if(current_time - last_get_time > 1000) {
+    if(current_time - last_get_time > 100) {
       *car_speed = 0;
       last_get_time = current_time;
       return true;

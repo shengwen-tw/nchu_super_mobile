@@ -291,7 +291,6 @@ void send_onboard_parameter_to_tablet()
 {
   int engine_turn_off = 0;
   int engine_turn_on = 0;
-  engine_temp = 0; 
   
   char buffer[256] = {0};
 

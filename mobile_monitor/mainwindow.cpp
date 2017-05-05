@@ -117,6 +117,13 @@ void MainWindow::serialRead()
         } else {
             ui->turn_on_indicator->setPalette(on);
         }
+
+        //Efficiency
+        data = serial.read(4);
+        ui->efficient_label->setText(data);
+        ui->command_text->append(data);
+        //qDebug(data);
+
         data = serial.readAll();
     }
 }

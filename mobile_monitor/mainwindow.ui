@@ -93,98 +93,13 @@
     <property name="frameShadow">
      <enum>QFrame::Raised</enum>
     </property>
-    <widget class="QGroupBox" name="groupBox">
-     <property name="geometry">
-      <rect>
-       <x>30</x>
-       <y>0</y>
-       <width>261</width>
-       <height>161</height>
-      </rect>
-     </property>
-     <property name="palette">
-      <palette>
-       <active>
-        <colorrole role="WindowText">
-         <brush brushstyle="SolidPattern">
-          <color alpha="255">
-           <red>255</red>
-           <green>255</green>
-           <blue>255</blue>
-          </color>
-         </brush>
-        </colorrole>
-       </active>
-       <inactive>
-        <colorrole role="WindowText">
-         <brush brushstyle="SolidPattern">
-          <color alpha="255">
-           <red>255</red>
-           <green>255</green>
-           <blue>255</blue>
-          </color>
-         </brush>
-        </colorrole>
-       </inactive>
-       <disabled>
-        <colorrole role="WindowText">
-         <brush brushstyle="SolidPattern">
-          <color alpha="255">
-           <red>120</red>
-           <green>120</green>
-           <blue>120</blue>
-          </color>
-         </brush>
-        </colorrole>
-       </disabled>
-      </palette>
-     </property>
-     <property name="font">
-      <font>
-       <family>Adobe Arabic</family>
-       <pointsize>26</pointsize>
-       <weight>75</weight>
-       <bold>true</bold>
-      </font>
-     </property>
-     <property name="title">
-      <string>Engine RPM</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignCenter</set>
-     </property>
-     <widget class="QLabel" name="rpm_label">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>40</y>
-        <width>241</width>
-        <height>111</height>
-       </rect>
-      </property>
-      <property name="font">
-       <font>
-        <family>Adobe Arabic</family>
-        <pointsize>25</pointsize>
-        <weight>75</weight>
-        <bold>true</bold>
-       </font>
-      </property>
-      <property name="text">
-       <string>-</string>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignCenter</set>
-      </property>
-     </widget>
-    </widget>
     <widget class="QGroupBox" name="groupBox_2">
      <property name="geometry">
       <rect>
        <x>340</x>
        <y>0</y>
        <width>261</width>
-       <height>161</height>
+       <height>131</height>
       </rect>
      </property>
      <property name="palette">
@@ -244,7 +159,7 @@
         <x>10</x>
         <y>40</y>
         <width>241</width>
-        <height>111</height>
+        <height>81</height>
        </rect>
       </property>
       <property name="font">
@@ -267,9 +182,9 @@
      <property name="geometry">
       <rect>
        <x>30</x>
-       <y>190</y>
+       <y>150</y>
        <width>261</width>
-       <height>161</height>
+       <height>131</height>
       </rect>
      </property>
      <property name="palette">
@@ -329,7 +244,7 @@
         <x>10</x>
         <y>40</y>
         <width>241</width>
-        <height>111</height>
+        <height>81</height>
        </rect>
       </property>
       <property name="font">
@@ -352,9 +267,9 @@
      <property name="geometry">
       <rect>
        <x>340</x>
-       <y>190</y>
+       <y>150</y>
        <width>261</width>
-       <height>161</height>
+       <height>131</height>
       </rect>
      </property>
      <property name="palette">
@@ -414,7 +329,7 @@
         <x>10</x>
         <y>40</y>
         <width>241</width>
-        <height>111</height>
+        <height>81</height>
        </rect>
       </property>
       <property name="font">
@@ -437,9 +352,9 @@
      <property name="geometry">
       <rect>
        <x>30</x>
-       <y>380</y>
+       <y>300</y>
        <width>261</width>
-       <height>161</height>
+       <height>131</height>
       </rect>
      </property>
      <property name="palette">
@@ -499,7 +414,7 @@
         <x>10</x>
         <y>40</y>
         <width>241</width>
-        <height>111</height>
+        <height>81</height>
        </rect>
       </property>
       <property name="palette">
@@ -559,9 +474,9 @@
      <property name="geometry">
       <rect>
        <x>340</x>
-       <y>380</y>
+       <y>300</y>
        <width>261</width>
-       <height>161</height>
+       <height>131</height>
       </rect>
      </property>
      <property name="palette">
@@ -621,7 +536,7 @@
         <x>10</x>
         <y>40</y>
         <width>241</width>
-        <height>111</height>
+        <height>81</height>
        </rect>
       </property>
       <property name="palette">
@@ -681,9 +596,9 @@
      <property name="geometry">
       <rect>
        <x>30</x>
-       <y>570</y>
+       <y>640</y>
        <width>571</width>
-       <height>121</height>
+       <height>51</height>
       </rect>
      </property>
      <property name="verticalScrollBarPolicy">
@@ -701,6 +616,176 @@
      <property name="textInteractionFlags">
       <set>Qt::NoTextInteraction</set>
      </property>
+    </widget>
+    <widget class="QGroupBox" name="groupBox">
+     <property name="geometry">
+      <rect>
+       <x>30</x>
+       <y>0</y>
+       <width>261</width>
+       <height>131</height>
+      </rect>
+     </property>
+     <property name="palette">
+      <palette>
+       <active>
+        <colorrole role="WindowText">
+         <brush brushstyle="SolidPattern">
+          <color alpha="255">
+           <red>255</red>
+           <green>255</green>
+           <blue>255</blue>
+          </color>
+         </brush>
+        </colorrole>
+       </active>
+       <inactive>
+        <colorrole role="WindowText">
+         <brush brushstyle="SolidPattern">
+          <color alpha="255">
+           <red>255</red>
+           <green>255</green>
+           <blue>255</blue>
+          </color>
+         </brush>
+        </colorrole>
+       </inactive>
+       <disabled>
+        <colorrole role="WindowText">
+         <brush brushstyle="SolidPattern">
+          <color alpha="255">
+           <red>120</red>
+           <green>120</green>
+           <blue>120</blue>
+          </color>
+         </brush>
+        </colorrole>
+       </disabled>
+      </palette>
+     </property>
+     <property name="font">
+      <font>
+       <family>Adobe Arabic</family>
+       <pointsize>26</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="title">
+      <string>Engine RPM</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+     <widget class="QLabel" name="rpm_label">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>40</y>
+        <width>241</width>
+        <height>81</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Adobe Arabic</family>
+        <pointsize>25</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text">
+       <string>-</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QGroupBox" name="groupBox_8">
+     <property name="geometry">
+      <rect>
+       <x>30</x>
+       <y>460</y>
+       <width>261</width>
+       <height>131</height>
+      </rect>
+     </property>
+     <property name="palette">
+      <palette>
+       <active>
+        <colorrole role="WindowText">
+         <brush brushstyle="SolidPattern">
+          <color alpha="255">
+           <red>255</red>
+           <green>255</green>
+           <blue>255</blue>
+          </color>
+         </brush>
+        </colorrole>
+       </active>
+       <inactive>
+        <colorrole role="WindowText">
+         <brush brushstyle="SolidPattern">
+          <color alpha="255">
+           <red>255</red>
+           <green>255</green>
+           <blue>255</blue>
+          </color>
+         </brush>
+        </colorrole>
+       </inactive>
+       <disabled>
+        <colorrole role="WindowText">
+         <brush brushstyle="SolidPattern">
+          <color alpha="255">
+           <red>120</red>
+           <green>120</green>
+           <blue>120</blue>
+          </color>
+         </brush>
+        </colorrole>
+       </disabled>
+      </palette>
+     </property>
+     <property name="font">
+      <font>
+       <family>Adobe Arabic</family>
+       <pointsize>22</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="title">
+      <string>Efficiency</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+     <widget class="QLabel" name="efficient_label">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>40</y>
+        <width>241</width>
+        <height>81</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Adobe Arabic</family>
+        <pointsize>25</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text">
+       <string>-</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
     </widget>
    </widget>
    <widget class="QGroupBox" name="groupBox_5">
@@ -903,7 +988,7 @@
      </font>
     </property>
     <property name="text">
-     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;發動前檢查所有按鈕&lt;/p&gt;&lt;p&gt;手動熄火要按到引擎完全停止為止&lt;/p&gt;&lt;p&gt;四周有人時關閉總電源&lt;/p&gt;&lt;p&gt;開車前告知對友&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;1.發動前檢查所有按鈕&lt;/p&gt;&lt;p&gt;2.手動熄火要按到引擎完全停止為止&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; color:#ff0000;&quot;&gt;3.四周有人時關閉總電源&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; color:#ff0000;&quot;&gt;4.開車前告知隊友&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignCenter</set>

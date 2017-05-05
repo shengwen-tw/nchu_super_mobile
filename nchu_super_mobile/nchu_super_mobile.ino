@@ -6,8 +6,15 @@
 #include "af_guage.hpp"
 #include "inject_correct.hpp"
 #include "inject_in.hpp"
+#include "fan.hpp"
+#include "car_speed.hpp"
 
-#define LOG_MODE -1 //0:print mode, 1:csv log mode, 2:A/F plot mode
+//-1, no serial output
+// 0:print mode
+// 1:csv log mode
+// 2:A/F plot
+// 3:Tablet mode
+#define SERIAL_PRINT_MODE 3
 
 #define FREQUENCY 10.0f
 #define DELTA_T (1.0 / FREQUENCY)
@@ -28,7 +35,7 @@
 
 #define D_FILTER_SIZE 2
 
-void debug_print();
+void serial_print();
 void send_onboard_parameter_to_tablet();
 
 /* Sensor datas */
@@ -37,6 +44,8 @@ float current_inject_duration = 0.0f;
 float engine_rpm = 0.0f;
 unsigned long previous_read_time = 0;
 boolean sensor_failed = true;
+float engine_temp;
+float car_speed;
 
 /* Controller timer: 10hz */
 unsigned long previous_control_time = 0;
@@ -59,25 +68,23 @@ bool no_previous_data = true;
 float d_moving_average[D_FILTER_SIZE] = {0};
 int d_moving_average_count = 0;
 
-float engine_temp;
-
 void setup() {
-  Serial.begin(115200); //USB, to tablet
-  Serial1.begin(9600);  //Not using
+  Serial.begin(115200); //Debug only
+  Serial1.begin(115200);  //USB, to tablet
   Serial2.begin(9600);  //Not using
   Serial3.begin(9600);  //A/F Guage
-
-  return; //for test XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
   engine_control_init();
   engine_rpm_init();
   inject_in_init();
+  car_speed_in_init();
   stepper_init();
   engine_temp_init();
   dac_init();
+  fan_init();
 
   set_dac(2.0f);
-
+  
   Serial.println("[Begin to check all sensors...]");
 
   Serial.println("[Inject period...]");
@@ -96,12 +103,8 @@ void setup() {
 
   Serial.println("[Start controller!]");
 
-  Serial.println("Please wait for 10 seconds!");
-
   pinMode(FREQUENCY_TEST_PIN, OUTPUT);
   digitalWrite(FREQUENCY_TEST_PIN, LOW);
-
-  delay(10000);
 
   previous_read_time = millis();
 }
@@ -109,8 +112,8 @@ void setup() {
 boolean read_sensors()
 {
   
-  int timeout_af = 65535, timeout_ij = 65535;
-  boolean get_af = false, get_inject = false;
+  int timeout_af = 65535, timeout_ij = 65535, timeout_car_speed = 65535;
+  boolean get_af = false, get_inject = false, _get_car_speed = false;
   while(timeout_af--) {
     get_af = read_air_fuel_ratio(&current_af);
 
@@ -127,6 +130,14 @@ boolean read_sensors()
     }
   }
 
+  while(timeout_car_speed--) {
+    _get_car_speed = get_car_speed(&car_speed);
+
+    if(_get_car_speed == true) {
+      break;
+    }
+  }
+
   get_engine_rpm(&engine_rpm);
 
   read_engine_temp(&engine_temp);
@@ -139,6 +150,8 @@ boolean read_sensors()
     previous_read_time = current_read_time;
     return true; //No error!
   } else {
+    Serial.println("Sensor failed");
+    
     /* Timeout! Sensor error! */
     sensor_failed = true;
 
@@ -233,12 +246,20 @@ void air_fuel_ratio_control()
   set_dac(dac_output_voltage);
 }
 
-void loop()
+void engine_auto_turn_off()
 {
-  //for test XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXx
-  send_onboard_parameter_to_tablet();
-  return;
+  if(engine_rpm > 6500.0) {
+      engine_off();
+  }
+}
+
+void fan_control()
+{
   
+}
+
+void loop()
+{ 
   boolean get_sensor_data = read_sensors();
 
   /* Read sensors */
@@ -252,39 +273,45 @@ void loop()
   unsigned long current_control_time = millis();
   if(current_control_time - previous_control_time >= (unsigned long)(DELTA_T * 1000.0)) {
     air_fuel_ratio_control();
+    //engine_auto_turn_off();
+    fan_control();
     previous_control_time = current_control_time; //Update frequency control timer
 
     //Toogle the frequency test pin, remember to x2 to get the real frequency!
-    digitalWrite(FREQUENCY_TEST_PIN, !digitalRead(FREQUENCY_TEST_PIN));
+    //digitalWrite(FREQUENCY_TEST_PIN, !digitalRead(FREQUENCY_TEST_PIN));
   }
 
   /* Debug print */
-  if(get_sensor_data == true) {
-    debug_print();
-  }
-
-  /* Engine off control test */
-  Serial.println(engine_temp);
-  if(engine_rpm > 6500.0) {
-      engine_off();
-  }
+  //if(get_sensor_data == true) {
+    serial_print();
+  //}
 }
 
 void send_onboard_parameter_to_tablet()
 {
+  int engine_turn_off = 0;
+  int engine_turn_on = 0;
+  
   char buffer[256] = {0};
 
-  sprintf(buffer, "@250006716.5085");
-
+  if(current_af < 10.0f) {
+    sprintf(buffer, "@%04.0f%03.0f0%02.1f%03.0f%1d%1d\n",
+           engine_rpm, car_speed, current_af, engine_temp, engine_turn_off, engine_turn_on);  
+  } else {
+    sprintf(buffer, "@%04.0f%03.0f%02.1f%03.0f%1d%1d\n",
+           engine_rpm, car_speed, current_af, engine_temp, engine_turn_off, engine_turn_on);
+  }
+  
   Serial.print(buffer);
+  Serial1.print(buffer);
   delay(1);
 }
 
-void debug_print()
+void serial_print()
 { 
    char buffer[256] = {'\0'};
   
-#if (LOG_MODE == 0)
+#if (SERIAL_PRINT_MODE == 0)
    sprintf(buffer,"A/F:%.3f,error:%+.3f,last error:%+.3f,int:%+.3f,corr:%+.3f,V:%.3f,P:%+.3f,I:%+.3f,D:%+.7f,ij:%.3f,time:%.3f\n\r",
      current_af,
      current_error,
@@ -298,7 +325,9 @@ void debug_print()
      current_inject_duration, //unit: millisecond
      millis() / 1000.0f       //unit: second
     );
-#elif (LOG_MODE == 1)
+    Serial.print(buffer);
+    delay(5);
+#elif (SERIAL_PRINT_MODE == 1)
   sprintf(buffer, "%.3f,%+.3f,%+.3f,%+.3f,%+.3f,%.3f,%+.3f,%+.3f,%+.7f,%.3f,%.3f\n",
     current_af,
     current_error,
@@ -312,10 +341,13 @@ void debug_print()
     current_inject_duration, //unit: millisecond
     millis() / 1000.0f       //unit: second
   );
-#elif (LOG_MODE == 2)
-  sprintf(buffer, "%f,%f\n", current_af, 16.5f);
-#endif
-
   Serial.print(buffer);
   delay(5);
+#elif (SERIAL_PRINT_MODE == 2)
+  sprintf(buffer, "%f,%f\n", current_af, 16.5f);
+   Serial.print(buffer);
+   delay(5);
+#elif (SERIAL_PRINT_MODE == 3)
+  send_onboard_parameter_to_tablet();
+#endif
 }

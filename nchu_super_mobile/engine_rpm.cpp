@@ -21,6 +21,8 @@ volatile unsigned filter_current_time = 0;
 volatile unsigned filter_prior_time = 0;
 volatile float filter_prior_freq;
 
+volatile unsigned long last_get_rpm_time = 0;
+
 void rpm_signal_rising_handler()
 {
   if(digitalRead(SPARK_IN) != HIGH) {
@@ -70,6 +72,8 @@ void rpm_signal_rising_handler()
     filtered_freq /= queue_size;
 
     filter_prior_freq = filtered_freq;
+
+    last_get_rpm_time = millis();
   }
 }
 
@@ -81,6 +85,13 @@ void engine_rpm_init()
 
 bool get_engine_rpm(float *rpm)
 {
+  volatile unsigned long current_time= millis();
+  if(current_time - last_get_rpm_time > 200) {
+    last_get_rpm_time = current_time;
+    filtered_freq = 0;
+    queue_size = 0;
+  }
+  
   *rpm = filtered_freq * 60;
   return true;
 }

@@ -14,7 +14,7 @@
 // 1:csv log mode
 // 2:A/F plot
 // 3:Tablet mode
-#define SERIAL_PRINT_MODE -1
+#define SERIAL_PRINT_MODE 3
 
 #define FREQUENCY 10.0f
 #define DELTA_T (1.0 / FREQUENCY)
@@ -69,7 +69,7 @@ float d_moving_average[D_FILTER_SIZE] = {0};
 int d_moving_average_count = 0;
 
 void setup() {
-  Serial.begin(57600); //USB, to tablet
+  Serial.begin(115200); //USB, to tablet
   Serial1.begin(9600);  //Not using
   Serial2.begin(9600);  //Not using
   Serial3.begin(9600);  //A/F Guage
@@ -103,12 +103,8 @@ void setup() {
 
   Serial.println("[Start controller!]");
 
-  Serial.println("Please wait for 10 seconds!");
-
   pinMode(FREQUENCY_TEST_PIN, OUTPUT);
   digitalWrite(FREQUENCY_TEST_PIN, LOW);
-
-  delay(10000);
 
   previous_read_time = millis();
 }
@@ -154,6 +150,8 @@ boolean read_sensors()
     previous_read_time = current_read_time;
     return true; //No error!
   } else {
+    Serial.println("Sensor failed");
+    
     /* Timeout! Sensor error! */
     sensor_failed = true;
 
@@ -293,11 +291,17 @@ void send_onboard_parameter_to_tablet()
 {
   int engine_turn_off = 0;
   int engine_turn_on = 0;
+  engine_temp = 0; 
   
   char buffer[256] = {0};
 
-  sprintf(buffer, "@%04.0f%03.0f%02.1f%03.0f%1d%1d\n",
-          engine_rpm, car_speed, current_af, engine_temp, engine_turn_off, engine_turn_on);
+  if(current_af < 10.0f) {
+    sprintf(buffer, "@%04.0f%03.0f0%02.1f%03.0f%1d%1d\n",
+           engine_rpm, car_speed, current_af, engine_temp, engine_turn_off, engine_turn_on);  
+  } else {
+    sprintf(buffer, "@%04.0f%03.0f%02.1f%03.0f%1d%1d\n",
+           engine_rpm, car_speed, current_af, engine_temp, engine_turn_off, engine_turn_on);
+  }
 
   Serial.print(buffer);
   delay(1);
@@ -321,6 +325,8 @@ void serial_print()
      current_inject_duration, //unit: millisecond
      millis() / 1000.0f       //unit: second
     );
+    Serial.print(buffer);
+    delay(5);
 #elif (SERIAL_PRINT_MODE == 1)
   sprintf(buffer, "%.3f,%+.3f,%+.3f,%+.3f,%+.3f,%.3f,%+.3f,%+.3f,%+.7f,%.3f,%.3f\n",
     current_af,
@@ -335,12 +341,13 @@ void serial_print()
     current_inject_duration, //unit: millisecond
     millis() / 1000.0f       //unit: second
   );
-#elif (SERIAL_PRINT_MODE == 2)
-  sprintf(buffer, "%f,%f\n", current_af, 16.5f);
-#elif (LOG_MOD == 3)
-  send_onboard_parameter_to_tablet();
-#endif
-
   Serial.print(buffer);
   delay(5);
+#elif (SERIAL_PRINT_MODE == 2)
+  sprintf(buffer, "%f,%f\n", current_af, 16.5f);
+   Serial.print(buffer);
+   delay(5);
+#elif (SERIAL_PRINT_MODE == 3)
+  send_onboard_parameter_to_tablet();
+#endif
 }

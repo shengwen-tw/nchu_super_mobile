@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1239</width>
-    <height>746</height>
+    <width>1055</width>
+    <height>1235</height>
    </rect>
   </property>
   <property name="palette">
@@ -84,7 +84,7 @@
       <x>90</x>
       <y>220</y>
       <width>1111</width>
-      <height>451</height>
+      <height>751</height>
      </rect>
     </property>
     <property name="frameShape">
@@ -96,8 +96,8 @@
     <widget class="QGroupBox" name="groupBox">
      <property name="geometry">
       <rect>
-       <x>0</x>
-       <y>30</y>
+       <x>30</x>
+       <y>0</y>
        <width>261</width>
        <height>161</height>
       </rect>
@@ -181,8 +181,8 @@
     <widget class="QGroupBox" name="groupBox_2">
      <property name="geometry">
       <rect>
-       <x>270</x>
-       <y>30</y>
+       <x>340</x>
+       <y>0</y>
        <width>261</width>
        <height>161</height>
       </rect>
@@ -266,8 +266,8 @@
     <widget class="QGroupBox" name="groupBox_4">
      <property name="geometry">
       <rect>
-       <x>540</x>
-       <y>30</y>
+       <x>30</x>
+       <y>190</y>
        <width>261</width>
        <height>161</height>
       </rect>
@@ -351,8 +351,8 @@
     <widget class="QGroupBox" name="groupBox_3">
      <property name="geometry">
       <rect>
-       <x>810</x>
-       <y>30</y>
+       <x>340</x>
+       <y>190</y>
        <width>261</width>
        <height>161</height>
       </rect>
@@ -436,8 +436,8 @@
     <widget class="QGroupBox" name="groupBox_6">
      <property name="geometry">
       <rect>
-       <x>0</x>
-       <y>200</y>
+       <x>30</x>
+       <y>380</y>
        <width>261</width>
        <height>161</height>
       </rect>
@@ -558,8 +558,8 @@
     <widget class="QGroupBox" name="groupBox_7">
      <property name="geometry">
       <rect>
-       <x>270</x>
-       <y>200</y>
+       <x>340</x>
+       <y>380</y>
        <width>261</width>
        <height>161</height>
       </rect>
@@ -676,6 +676,31 @@
        <set>Qt::AlignCenter</set>
       </property>
      </widget>
+    </widget>
+    <widget class="QTextEdit" name="command_text">
+     <property name="geometry">
+      <rect>
+       <x>30</x>
+       <y>570</y>
+       <width>571</width>
+       <height>121</height>
+      </rect>
+     </property>
+     <property name="verticalScrollBarPolicy">
+      <enum>Qt::ScrollBarAlwaysOn</enum>
+     </property>
+     <property name="horizontalScrollBarPolicy">
+      <enum>Qt::ScrollBarAlwaysOff</enum>
+     </property>
+     <property name="sizeAdjustPolicy">
+      <enum>QAbstractScrollArea::AdjustToContents</enum>
+     </property>
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
+     <property name="textInteractionFlags">
+      <set>Qt::NoTextInteraction</set>
+     </property>
     </widget>
    </widget>
    <widget class="QGroupBox" name="groupBox_5">
@@ -823,13 +848,74 @@
      </property>
     </widget>
    </widget>
+   <widget class="QLabel" name="label">
+    <property name="geometry">
+     <rect>
+      <x>120</x>
+      <y>934</y>
+      <width>571</width>
+      <height>191</height>
+     </rect>
+    </property>
+    <property name="palette">
+     <palette>
+      <active>
+       <colorrole role="WindowText">
+        <brush brushstyle="SolidPattern">
+         <color alpha="255">
+          <red>255</red>
+          <green>255</green>
+          <blue>255</blue>
+         </color>
+        </brush>
+       </colorrole>
+      </active>
+      <inactive>
+       <colorrole role="WindowText">
+        <brush brushstyle="SolidPattern">
+         <color alpha="255">
+          <red>255</red>
+          <green>255</green>
+          <blue>255</blue>
+         </color>
+        </brush>
+       </colorrole>
+      </inactive>
+      <disabled>
+       <colorrole role="WindowText">
+        <brush brushstyle="SolidPattern">
+         <color alpha="255">
+          <red>120</red>
+          <green>120</green>
+          <blue>120</blue>
+         </color>
+        </brush>
+       </colorrole>
+      </disabled>
+     </palette>
+    </property>
+    <property name="font">
+     <font>
+      <family>Adobe Arabic</family>
+      <pointsize>14</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;發動前檢查所有按鈕&lt;/p&gt;&lt;p&gt;手動熄火要按到引擎完全停止為止&lt;/p&gt;&lt;p&gt;四周有人時關閉總電源&lt;/p&gt;&lt;p&gt;開車前告知對友&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1239</width>
+     <width>1055</width>
      <height>25</height>
     </rect>
    </property>

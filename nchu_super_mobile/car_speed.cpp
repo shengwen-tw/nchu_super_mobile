@@ -5,11 +5,11 @@
 #define _PI_ 3.1415926
 
 /* Frequency counter */
-volatile unsigned long car_speed_current_rising_time;
-volatile unsigned long car_speed_previous_rising_time;
-volatile unsigned long car_speed_duration;
+volatile unsigned long car_speed_current_rising_time = 0;
+volatile unsigned long car_speed_previous_rising_time = 0;
+volatile unsigned long car_speed_duration = 0;
 volatile unsigned long last_get_time = 0;
-volatile float _car_speed;
+volatile float _car_speed = 0.0f;
 boolean car_speed_trigger = false;
 boolean car_speed_get = false;
 
@@ -51,12 +51,12 @@ boolean get_car_speed(float *car_speed)
   if(car_speed_get == true) {
     *car_speed = _car_speed;
     car_speed_get = false;
+
     return true;
   } else {
     unsigned long current_time = millis();
-
     /* The wheel is not spinning */
-    if(current_time - last_get_time > 100) {
+    if(current_time - last_get_time > 1000) {
       *car_speed = 0;
       last_get_time = current_time;
       return true;

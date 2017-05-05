@@ -112,7 +112,7 @@ void setup() {
 boolean read_sensors()
 {
   
-  int timeout_af = 65535, timeout_ij = 65535, timeout_car_speed;
+  int timeout_af = 65535, timeout_ij = 65535, timeout_car_speed = 65535;
   boolean get_af = false, get_inject = false, _get_car_speed = false;
   while(timeout_af--) {
     get_af = read_air_fuel_ratio(&current_af);
@@ -282,9 +282,9 @@ void loop()
   }
 
   /* Debug print */
-  if(get_sensor_data == true) {
+  //if(get_sensor_data == true) {
     serial_print();
-  }
+  //}
 }
 
 void send_onboard_parameter_to_tablet()
